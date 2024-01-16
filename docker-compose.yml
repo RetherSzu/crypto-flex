@@ -1,0 +1,41 @@
+version: "3.3"
+
+networks:
+    crypto-flex-dev:
+
+services:
+    api:
+        build: .
+        working_dir: /var/www/html
+        environment:
+            - TZ:"Europe/Paris"
+            - "DATABASE_URL=mysql://${DEV_SQL_USER}:${DEV_SQL_PASSWD}@db:3306/${DEV_SQL_DB}?serverVersion=10.5"
+        ports:
+            - "${DEV_PORT}:80"
+        volumes:
+            - .:/var/www/html
+            - /var/www/html/vendor
+            - /var/www/html/node_modules
+            - /var/www/html/var/cache
+        restart: always
+        networks:
+            - crypto-flex-dev
+
+    db:
+        image: mariadb:10.5.9
+        restart: always
+        ports:
+            - "${DEV_DB_PORT}:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASS}"
+            MYSQL_USER: "${DEV_SQL_USER}"
+            MYSQL_PASSWORD: "${DEV_SQL_PASSWD}"
+            MYSQL_DATABASE: "${DEV_SQL_DB}"
+        volumes:
+            - crypto-flex-db:/var/lib/mysql
+            - ./server/my.cnf:/etc/mysql/conf.d/my.cnf
+        networks:
+            - crypto-flex-dev
+
+volumes:
+    crypto-flex-db:
